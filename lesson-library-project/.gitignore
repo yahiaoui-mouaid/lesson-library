@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.DS_Store
+.vite/
+# Generated from the root lessons/ folder by scripts/generate-manifest.mjs
+public/lessons/
+public/manifest.json
