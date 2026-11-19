@@ -21,7 +21,7 @@ import {
   Layers,
   LayoutDashboard,
   Library,
-  Menu,
+
   Moon,
   Search,
   ShieldCheck,
@@ -166,10 +166,11 @@ function App() {
 
   return (
     <div className={`app-shell theme-${theme}`}>
-      {mobileNavOpen && <button className="mobile-scrim" aria-label="Close navigation" onClick={() => setMobileNavOpen(false)} />}
-      <Sidebar
+      {mobileNavOpen && <button className="mobile-scrim" aria-label="Close subjects" onClick={() => setMobileNavOpen(false)} />}
+      <TabBar
         categories={categories}
-        mobileOpen={mobileNavOpen}
+        subjectsOpen={mobileNavOpen}
+        onToggleSubjects={() => setMobileNavOpen((open) => !open)}
         onNavigate={() => setMobileNavOpen(false)}
       />
       <main className="main-panel">
@@ -178,7 +179,6 @@ function App() {
           onSearch={handleSearch}
           theme={theme}
           onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          onOpenMenu={() => setMobileNavOpen(true)}
         />
         <div className="page-content">
           <Routes>
@@ -200,70 +200,71 @@ function App() {
   );
 }
 
-function Sidebar({ categories, mobileOpen, onNavigate }) {
+function TabBar({ categories, subjectsOpen, onToggleSubjects, onNavigate }) {
+  const location = useLocation();
+  const onSubject = location.pathname.startsWith('/category/');
   return (
-    <aside className={`sidebar ${mobileOpen ? 'sidebar-open' : ''}`}>
-      <Link to="/" className="brand" onClick={onNavigate}>
-        <span className="brand-mark"><Library size={21} strokeWidth={2.2} /></span>
-        <span className="brand-copy"><strong>lesson atlas</strong><small>PERSONAL LEARNING LIBRARY</small></span>
-      </Link>
-
-      <div className="sidebar-label">WORKSPACE</div>
-      <nav className="primary-nav" aria-label="Main navigation">
+    <>
+      {subjectsOpen && (
+        <div className="subject-sheet" role="dialog" aria-label="Subjects">
+          <div className="sidebar-section-heading">
+            <span className="sidebar-label">SUBJECTS</span>
+            <span className="subject-count">{categories.length.toString().padStart(2, '0')}</span>
+          </div>
+          <nav className="subject-nav" aria-label="Subject categories">
+            {categories.map((category) => {
+              const Icon = ICONS[category.icon] || FolderOpen;
+              return (
+                <NavLink
+                  key={category.id}
+                  to={`/category/${category.id}`}
+                  onClick={onNavigate}
+                  className={({ isActive }) => `subject-link ${isActive ? 'active' : ''}`}
+                >
+                  <span className={`subject-icon accent-${category.accent}`}><Icon size={16} /></span>
+                  <span>{category.title}</span>
+                  <ChevronRight className="subject-chevron" size={14} />
+                </NavLink>
+              );
+            })}
+          </nav>
+        </div>
+      )}
+      <nav className="tab-bar" aria-label="Main navigation">
         <SideLink to="/" icon={LayoutDashboard} label="Overview" end onClick={onNavigate} />
         <SideLink to="/all" icon={BookOpen} label="All lessons" onClick={onNavigate} />
+        <button
+          type="button"
+          className={`side-link ${subjectsOpen || onSubject ? 'active' : ''}`}
+          onClick={onToggleSubjects}
+          aria-expanded={subjectsOpen}
+        >
+          <Layers size={20} strokeWidth={1.9} />
+          <span>Subjects</span>
+        </button>
         <SideLink to="/bookmarks" icon={Bookmark} label="Bookmarks" onClick={onNavigate} />
         <SideLink to="/completed" icon={CheckCircle2} label="Completed" onClick={onNavigate} />
       </nav>
-
-      <div className="sidebar-section-heading">
-        <span className="sidebar-label">SUBJECTS</span>
-        <span className="subject-count">{categories.length.toString().padStart(2, '0')}</span>
-      </div>
-      <nav className="subject-nav" aria-label="Subject categories">
-        {categories.map((category) => {
-          const Icon = ICONS[category.icon] || FolderOpen;
-          return (
-            <NavLink
-              key={category.id}
-              to={`/category/${category.id}`}
-              onClick={onNavigate}
-              className={({ isActive }) => `subject-link ${isActive ? 'active' : ''}`}
-            >
-              <span className={`subject-icon accent-${category.accent}`}><Icon size={16} /></span>
-              <span>{category.title}</span>
-              <ChevronRight className="subject-chevron" size={14} />
-            </NavLink>
-          );
-        })}
-      </nav>
-
-      <div className="sidebar-bottom">
-        <div className="sidebar-note">
-          <div className="note-icon"><Sparkles size={16} /></div>
-          <strong>Small steps add up.</strong>
-          <p>Keep exploring. Your next idea could be one lesson away.</p>
-        </div>
-        <div className="sidebar-version"><span className="status-dot" /> YOUR PRIVATE STUDY SPACE</div>
-      </div>
-    </aside>
+    </>
   );
 }
 
 function SideLink({ to, icon: Icon, label, end = false, onClick }) {
   return (
     <NavLink to={to} end={end} onClick={onClick} className={({ isActive }) => `side-link ${isActive ? 'active' : ''}`}>
-      <Icon size={17} strokeWidth={1.9} />
+      <Icon size={20} strokeWidth={1.9} />
       <span>{label}</span>
     </NavLink>
   );
 }
 
-function Topbar({ query, onSearch, theme, onToggleTheme, onOpenMenu }) {
+function Topbar({ query, onSearch, theme, onToggleTheme }) {
   return (
     <header className="topbar">
-      <button className="mobile-menu-button icon-button" onClick={onOpenMenu} aria-label="Open navigation"><Menu size={20} /></button>
-      <div className="breadcrumb"><span>LIBRARY</span><ChevronRight size={13} /><strong>MY LEARNING SPACE</strong></div>
+      <Link to="/" className="brand">
+        <span className="brand-mark"><Library size={19} strokeWidth={2.2} /></span>
+        <span className="brand-copy"><strong>lesson atlas</strong><small>PERSONAL LEARNING LIBRARY</small></span>
+      </Link>
       <div className="topbar-actions">
         <label className="global-search">
           <Search size={17} />

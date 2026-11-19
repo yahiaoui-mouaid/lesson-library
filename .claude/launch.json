@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "lesson-atlas",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "lesson-library-project", "run", "dev", "--", "--port", "5173"],
+      "port": 5173
+    }
+  ]
+}
